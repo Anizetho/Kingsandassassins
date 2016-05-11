@@ -316,9 +316,10 @@ class KingAndAssassinsClient(game.GameClient):
         #   ('kill', x, y, dir): kills the assassin/knight in direction dir with knight/assassin at position (x, y)
         #   ('attack', x, y, dir): attacks the king in direction dir with assassin at position (x, y)
         #   ('reveal', x, y): reveals villager at position (x,y) as an assassin # reveal = révéler
+
         state = state._state['visible']
 
-        # To find the position of a paw
+        # To find the position of a person
         def findpos(name):
             l = 0
             listknight = []
@@ -334,18 +335,8 @@ class KingAndAssassinsClient(game.GameClient):
                             return l-1, c-1
             return listknight
 
-        # To calculate the AP's card
-        #def APcards():
-        #    AP_King = state['card'][0]
-        #    AP_Knight = state['card'][1]
-        #    AP_Villager_ = state['card'][3]
-        #    APall = [AP_King, AP_Knight, AP_Villager_]
-        #    return APall
 
-        #AP_King = APcards()[0]
-        #AP_Knight = APcards()[1]
-        #AP_Villager = APcards()[2]
-
+        # To know the squares around the king
         def kingSpace(kingState):
             posy = findpos('king')[0]
             posx = findpos('king')[1]
@@ -354,50 +345,93 @@ class KingAndAssassinsClient(game.GameClient):
 
             if kingState == 'healthy' or kingState == 'injured':
                 spacefinal = []
-                for n in space:
-                    if n[0] < 10 and n[1] < 10:
-                        spacefinal.append(n)
+                for squares in space:
+                    if squares[0] < 10 and squares[1] < 10:
+                        spacefinal.append(squares)
                 return spacefinal
 
 
+        # To know if on the squares around the king, there are villagers
         def KingInDanger():
                 espace = kingSpace('healthy')
-                for n in espace :
-                    if PEOPLE[n[0]][n[1]] in POPULATION :
+                for squares in espace :
+                    if PEOPLE[squares[0]][squares[1]] in POPULATION :
                         return True
                     else:
                         return False
 
-
-        def kingaction():
+        # To determinate the moves of the king
+        def kingmove():
             posKing = findpos('king')
-            kingmove = []
+            kingaction = []
             i=0
-            kingPath = ['W', 'W', 'W', 'W', 'W', 'N', 'N', 'N', 'N', 'N', 'W', 'W', 'W']
+            # The king can only do one path..  :'(
+            kingpath = ['W', 'W', 'W', 'W', 'W', 'N', 'N', 'N', 'N', 'N', 'W', 'W', 'W']
             global path
-            path = kingPath
+            path = kingpath
             while i < 1:
-                # Si sur les cases autour du roi, il n'y pas de citoyens
+                # If, on the squares around the king, there aren't villagers
                 if KingInDanger() is False :
-                    kingmove.append(('move', posKing[0], posKing[1], path[0]))
-                # Si il y a des citoyens autour du roi
+                    kingaction.append(('move', posKing[0], posKing[1], path[0]))
                 else:
-                    kingmove.append(())
+                    kingaction.append(())
                 del(path[0])
                 i += 1
-            return kingmove
+            return kingaction
 
 
 
-        def moveking():
-            directmovewin = (('move', 9, 9, 'W'), ('move', 9,8, 'W'), ('move', 9, 7, 'W'), ('move', 9, 6 ,'W'), ('move', 9,5, 'W'), ('move', 9,4, 'W'), ('move', 9,3, 'W'), ('move', 9,2, 'N'), ('move', 8, 2, 'N'), ('move', 7, 2, 'N'), ('move', 6, 2, 'N'), ('move', 5, 2, 'N'),('move', 4, 2, 'N'), ('move', 3, 2 ,'W'), ('move', 3,1, 'W'))
+        # To determinate the 4 knights who will move (only those 4 knights.. To be sure with the AP_Knight --> trick..)
+        def the4Knights():
+            posKnight = findpos('knight')
+            kn1 = posKnight[6]
+            kn2 = posKnight[3]
+            kn3 = posKnight[4]
+            kn4 = posKnight[5]
+            pos4knights = [kn1, kn2, kn3, kn4]
+            return pos4knights
 
-        # To recognize an assassin
+        # To determinate the knights'moves
+        def knightmove():
+            postheKnight = the4Knights()
+            postheKnight1 = postheKnight[0]
+            postheKnight2 = postheKnight[1]
+            postheKnight3 = postheKnight[2]
+            postheKnight4 = postheKnight[3]
+            knightaction1 = []
+            knightaction2 = []
+            knightaction3 = []
+            knightaction4 = []
+            i=0
+            # The knights have all an predefined path..
+            knight1path = ['W','W','W','W','W','W','W','N','N','N','N','W','N','N','W','W']
+            knight2path = ['W','W','W','W','W','N','N','N','N','N','N','W']     # Au 5ème coup : arrestation ou un coup à droite
+            knight3path = ['W','W','W','W','W','N','N','N','N','N','N','W']
+            knight4path = ['W','W','W','W','W','N','N','N','N','N','N','W']
+            global path1, path2, path3, path4
+            path1 = knight1path
+            path2 = knight2path
+            path3 = knight3path
+            path4 = knight4path
+            knightaction = []
+            while i < 1:
+                knightaction1.append(('move', postheKnight1[0], postheKnight1[1], path1[0]))
+                knightaction2.append(('move', postheKnight2[0], postheKnight2[1], path2[0]))
+                knightaction3.append(('move', postheKnight3[0], postheKnight3[1], path3[0]))
+                knightaction4.append(('move', postheKnight4[0], postheKnight4[1], path4[0]))
+                del(path1[0])
+                del(path2[0])
+                del(path3[0])
+                del(path4[0])
+                knightaction = [knightaction1[0], knightaction2[0], knightaction3[0], knightaction4[0]]
+                i += 1
+            return knightaction
 
 
-        # On définit les 3 assassins lors du 1er tour
+        # First card
         if state['card'] is None:
 
+            # To recognize an assassin
             def recognizeassassins() :
                 P = state['people']
                 A1 = P[2][1]
@@ -412,9 +446,10 @@ class KingAndAssassinsClient(game.GameClient):
             return json.dumps({'assassins': posAssassins}, separators=(',', ':'))
 
 
-
+        # Others cards
         else:
 
+            #
             if self._playernb == 0:
                 for i in range(10):
                     for j in range(10):

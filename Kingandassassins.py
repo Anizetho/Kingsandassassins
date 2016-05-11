@@ -334,6 +334,20 @@ class KingAndAssassinsClient(game.GameClient):
                             return l-1, c-1
             return listknight
 
+        # To calculate the AP's card
+        #def APcards():
+        #    AP_King = state['card'][0]
+        #    AP_Knight = state['card'][1]
+        #    AP_Villager_ = state['card'][3]
+        #    APall = [AP_King, AP_Knight, AP_Villager_]
+        #    return APall
+
+        #AP_King = APcards()[0]
+        #AP_Knight = APcards()[1]
+        #AP_Villager = APcards()[2]
+
+        def moveking():
+            directmovewin = (('move', 9, 9, 'W'), ('move', 9,8, 'W'), ('move', 9, 7, 'W'), ('move', 9, 6 ,'W'), ('move', 9,5, 'W'), ('move', 9,4, 'W'), ('move', 9,3, 'W'), ('move', 9,2, 'N'), ('move', 8, 2, 'N'), ('move', 7, 2, 'N'), ('move', 6, 2, 'N'), ('move', 5, 2, 'N'),('move', 4, 2, 'N'), ('move', 3, 2 ,'W'), ('move', 3,1, 'W'))
 
         # To recognize an assassin
         def recognizeassassins() :
@@ -350,9 +364,6 @@ class KingAndAssassinsClient(game.GameClient):
         if state['card'] is None:
             return json.dumps({'assassins': [posAssassins[0], posAssassins[1], posAssassins[2]]}, separators=(',', ':'))
 
-        #AP_King = state['card'][0]
-        #AP_Knight = state['card'][1]
-        #AP_Villager_ = state['card'][3]
 
 
         else:

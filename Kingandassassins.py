@@ -346,6 +346,49 @@ class KingAndAssassinsClient(game.GameClient):
         #AP_Knight = APcards()[1]
         #AP_Villager = APcards()[2]
 
+        def kingSpace(kingState):
+            posy = findpos('king')[0]
+            posx = findpos('king')[1]
+            space = [(posy-1, posx-1) , (posy-1, posx) , (posy-1, posx+1) , (posy, posx-1),
+                     (posy, posx+1) , (posy+1, posx-1) , (posy+1, posx) , (posy+1, posx+1)]
+
+            if kingState == 'healthy' or kingState == 'injured':
+                spacefinal = []
+                for n in space:
+                    if n[0] < 10 and n[1] < 10:
+                        spacefinal.append(n)
+                return spacefinal
+
+
+        def KingInDanger():
+                espace = kingSpace('healthy')
+                for n in espace :
+                    if PEOPLE[n[0]][n[1]] in POPULATION :
+                        return True
+                    else:
+                        return False
+
+
+        def kingaction():
+            posKing = findpos('king')
+            kingmove = []
+            i=0
+            kingPath = ['W', 'W', 'W', 'W', 'W', 'N', 'N', 'N', 'N', 'N', 'W', 'W', 'W']
+            global path
+            path = kingPath
+            while i < 1:
+                # Si sur les cases autour du roi, il n'y pas de citoyens
+                if KingInDanger() is False :
+                    kingmove.append(('move', posKing[0], posKing[1], path[0]))
+                # Si il y a des citoyens autour du roi
+                else:
+                    kingmove.append(())
+                del(path[0])
+                i += 1
+            return kingmove
+
+
+
         def moveking():
             directmovewin = (('move', 9, 9, 'W'), ('move', 9,8, 'W'), ('move', 9, 7, 'W'), ('move', 9, 6 ,'W'), ('move', 9,5, 'W'), ('move', 9,4, 'W'), ('move', 9,3, 'W'), ('move', 9,2, 'N'), ('move', 8, 2, 'N'), ('move', 7, 2, 'N'), ('move', 6, 2, 'N'), ('move', 5, 2, 'N'),('move', 4, 2, 'N'), ('move', 3, 2 ,'W'), ('move', 3,1, 'W'))
 

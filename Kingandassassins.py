@@ -111,7 +111,7 @@ class KingAndAssassinsState(game.GameState):
 
     def __init__(self, initialstate=KA_INITIAL_STATE):
         super().__init__(initialstate)
-    
+
     def _nextfree(self, x, y, dir):
         nx, ny = self._getcoord((x, y, dir))
 
@@ -203,6 +203,7 @@ class KingAndAssassinsState(game.GameState):
         # If assassins' team just played, draw a new card
         if player == 0:
             visible['card'] = hidden['cards'].pop()
+            statecard = visible['card']
 
     def _getcoord(self, coord):
         return tuple(coord[i] + KingAndAssassinsState.DIRECTIONS[coord[2]][i] for i in range(2))
@@ -228,7 +229,7 @@ class KingAndAssassinsState(game.GameState):
 
     def isinitial(self):
         return self._state['hidden']['assassins'] is None
-    
+
     def setassassins(self, assassins):
         self._state['hidden']['assassins'] = set(assassins)
 
@@ -302,6 +303,8 @@ class KingAndAssassinsClient(game.GameClient):
     def _handle(self, message):
         pass
 
+
+
     def _nextmove(self, state):
         # Two possible situations:
         # - If the player is the first to play, it has to select his/her assassins
@@ -315,12 +318,19 @@ class KingAndAssassinsClient(game.GameClient):
         #   ('reveal', x, y): reveals villager at position (x,y) as an assassin # reveal = révéler
         state = state._state['visible']
 
-        def recognize():
+        def recognizeassassins() :
+            P = PEOPLE
+            A1 = P[2][1]
+            A2 = P[5][5]
+            A3 = P[8][3]
+            posAssassins = [A1, A2, A3]
+            return posAssassins
 
+        posAssassins = recognizeassassins()
 
         # On définit les 3 assassins lors du 1er tour
         if state['card'] is None:
-            return json.dumps({'assassins': ['monk', 'hooker', 'fishwoman']}, separators=(',', ':'))
+            return json.dumps({'assassins': [posAssassins[0], posAssassins[1], posAssassins[2]]}, separators=(',', ':'))
 
         #AP_King = state['card'][0]
         #AP_Knight = state['card'][1]
@@ -329,11 +339,10 @@ class KingAndAssassinsClient(game.GameClient):
 
         else:
 
-            # Déplacement des citoyens
             if self._playernb == 0:
                 for i in range(10):
                     for j in range(10):
-                        if state['people'][i][j] in {'monk', 'hooker', 'fishwoman'}:
+                        if state['people'][i][j] in {posAssassins[0], posAssassins[1], posAssassins[2]}:
                             return json.dumps({'actions': [('reveal', i, j)]}, separators=(',', ':'))
 
 

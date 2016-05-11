@@ -111,7 +111,7 @@ class KingAndAssassinsState(game.GameState):
 
     def __init__(self, initialstate=KA_INITIAL_STATE):
         super().__init__(initialstate)
-    
+
     def _nextfree(self, x, y, dir):
         nx, ny = self._getcoord((x, y, dir))
 
@@ -203,6 +203,7 @@ class KingAndAssassinsState(game.GameState):
         # If assassins' team just played, draw a new card
         if player == 0:
             visible['card'] = hidden['cards'].pop()
+            statecard = visible['card']
 
     def _getcoord(self, coord):
         return tuple(coord[i] + KingAndAssassinsState.DIRECTIONS[coord[2]][i] for i in range(2))
@@ -228,7 +229,7 @@ class KingAndAssassinsState(game.GameState):
 
     def isinitial(self):
         return self._state['hidden']['assassins'] is None
-    
+
     def setassassins(self, assassins):
         self._state['hidden']['assassins'] = set(assassins)
 
@@ -302,6 +303,8 @@ class KingAndAssassinsClient(game.GameClient):
     def _handle(self, message):
         pass
 
+
+
     def _nextmove(self, state):
         # Two possible situations:
         # - If the player is the first to play, it has to select his/her assassins
@@ -313,41 +316,197 @@ class KingAndAssassinsClient(game.GameClient):
         #   ('kill', x, y, dir): kills the assassin/knight in direction dir with knight/assassin at position (x, y)
         #   ('attack', x, y, dir): attacks the king in direction dir with assassin at position (x, y)
         #   ('reveal', x, y): reveals villager at position (x,y) as an assassin # reveal = révéler
+
         state = state._state['visible']
 
-        def recognize():
+        global TURN
+        TURN += 1
 
+
+        # To find the position of a paw
+        def findpos(name):
+            l = 0
+            listknight = []
+            for line in PEOPLE:
+                l += 1
+                c = 0
+                for column in line :
+                    c += 1
+                    if column == name :
+                        if name == 'knight':
+                            listknight.append((l-1, c-1))
+                        else:
+                            return l-1, c-1
+            return listknight
+
+
+
+        # To calculate the AP's card
+        #def APcards():
+        #    AP_King = state['card'][0]
+        #    AP_Knight = state['card'][1]
+        #    AP_Villager_ = state['card'][3]
+        #    APall = [AP_King, AP_Knight, AP_Villager_]
+        #    return APall
+
+        #AP_King = APcards()[0]
+        #AP_Knight = APcards()[1]
+        #AP_Villager = APcards()[2]
+
+        def moveking():
+            directmovewin = (('move', 9, 9, 'W'), ('move', 9,8, 'W'), ('move', 9, 7, 'W'), ('move', 9, 6 ,'W'), ('move', 9,5, 'W'), ('move', 9,4, 'W'), ('move', 9,3, 'W'), ('move', 9,2, 'N'), ('move', 8, 2, 'N'), ('move', 7, 2, 'N'), ('move', 6, 2, 'N'), ('move', 5, 2, 'N'),('move', 4, 2, 'N'), ('move', 3, 2 ,'W'), ('move', 3,1, 'W'))
+
+        def movevillager():
+            directmovevillager = (('move',5, 7, 'S'))
+
+        def moveknight():
+            directmoveknight = (('move', 9, 8, 'W'))
+
+
+        # Définir les cases autour du roi dans le cas où il n'est pas blessé et dans le cas ou il est blessé
+        def kingSpace(kingState):
+                    # Return the coordinates of the case around the king --> Vital space
+                    posy = findpos('king')[0]
+                    posx = findpos('king')[1]
+
+                    space = [(posy-1, posx-1),(posy-1, posx),(posy-1, posx+1),(posy, posx-1),(posy, posx+1),
+                             (posy+1, posx-1),(posy+1, posx), (posy+1, posx+1)]
+
+
+                    space2 = [(posy-2, posx-2), (posy-2, posx-1), (posy-2, posx), (posy-2, posx+1), (posx-2, posx+2),
+                              (posy-1, posx-2), (posy-1, posx-1),(posy-1, posx), (posy-1, posx+1), (posy-1, posx+2),
+                              (posy, posx-2) ,(posy, posx - 1),(posy, posx + 1), (posy, posx+2),
+                              (posy+1, posx-2),(posy + 1, posx-1),(posy+1, posx), (posy+1, posx+1), (posy+1, posx+2),
+                              (posy+2, posx-2), (posy+2, posx-1), (posy+2, posx),(posy+2, posx+1), (posy+2, posx+2)]
+
+
+                    if kingState == 'healthy':
+                        spacefinal = []
+                        for n in space:
+                            if n[0] < 10 and n[1] < 10:
+                                spacefinal.append(n)
+                        return spacefinal
+
+                    elif kingState == 'injured':
+                        spacefinal = []
+                        for n in space2:
+                            if n[0] < 10 and n[1] < 10:
+                                spacefinal.append(n)
+                        return spacefinal
+
+
+        # Quand le roi est blessé, définir les chevaliers autour de lui !
+        def knightarround():
+            posKnights = findpos('knight')  # List of knights' position
+            kingspace = kingSpace('injured') # List of knights around the king
+            knightarround = []
+            for n in posKnights:
+                if n in kingspace:
+                    knightarround.append(n)
+
+            return knightarround
+
+
+
+        def KingInDanger(nextmove):
+            if nextmove == 'N' :
+                nextpos = (posKing[0]+1, posKing[1])
+            elif nextmove == 'W' :
+                nextpos = (posKing[0], posKing[1]-1)
+            elif nextmove == 'E' :
+                nextpos = (posKing[0], posKing[1]+1)
+            elif nextmove == 'S':
+                nextpos = (posKing[0]-1, posKing[1])
+
+
+            if KA_INITIAL_STATE['king'] == 'healthy' :
+                espace = kingSpace('healthy')
+                for n in espace :
+                    if PEOPLE[n[0]][n[1]] in POPULATION :
+                        return True
+                    else:
+                        return False
+
+            if KA_INITIAL_STATE['king'] == 'injured' :
+                espace = kingSpace('injured')
+                for n in espace :
+                    if PEOPLE[n[0]][n[1]] in POPULATION :
+                        return True
+                    else :
+                        return False
 
         # On définit les 3 assassins lors du 1er tour
         if state['card'] is None:
-            return json.dumps({'assassins': ['monk', 'hooker', 'fishwoman']}, separators=(',', ':'))
 
-        #AP_King = state['card'][0]
-        #AP_Knight = state['card'][1]
-        #AP_Villager_ = state['card'][3]
+            # To recognize an assassin
+            def recognizeassassins() :
+                P = state['people']
+                A1 = P[2][1]
+                A2 = P[5][5]
+                A3 = P[8][3]
+                posAssassins = [A1, A2, A3]
+                return posAssassins
+
+            global posAssassins
+            posAssassins = recognizeassassins()
+
+
+            # Debute par 6 cases à gauche
+            kingPath = ['W', 'W', 'W', 'W', 'W', 'N', 'N', 'N', 'N', 'N', 'W', 'W', 'W']
+
+            global path
+            path = kingPath
+
+            return json.dumps({'assassins': posAssassins}, separators=(',', ':'))
+
 
 
         else:
+            APking = state['card'][0]
+            APknight = state['card'][1]
+            Fetter = state['card'][2]
+            APvillage = state['card'][3]
 
-            # Déplacement des citoyens
+
+            #
             if self._playernb == 0:
-                posVillagers = []
-                for i in range(10):
-                    for j in range(10):
-                        if state['people'][i][j] not in {'knight', 'king', None}:
-                            posVillagers.append(state['people'][i][j])
+                actionslist = []
 
+                # Faire converger tout les villageois vers le roi
+                posKing = findpos('king')
+                i = 0
+                while i < APvillage :
+                    print('fonctionne?')
+                    
+                # Des qu'un villageois est dans un cercle restreint du roi il se révele et l'attaque
+                # Tuer les chevalier dans le coin haut gauche
 
-                return json.dumps({'actions': []}, separators=(',', ':'))
+                return json.dumps({'actions': actionslist}, separators=(',', ':'))
 
 
 
             # Déplacement du roi et des chevaliers
             else:
+                posKing = findpos('king')
+                actionslist = []
+                posKnights = findpos('knight')  # List of knights' position
+                knightarround = knightarround()
 
-                actionlist =[]
+                if not KingInDanger(path[0]):
+                    actionslist.append(('move', posKing, path[0]))
+                    if path[0] == 'N':
+                        global newpos
+                        newpos = (posKing[0] + 1, posKing[1])
+                    elif path[0] == 'W':
+                        newpos = (posKing[0], posKing[1] - 1)
+                    del(path[0])
+
+                if APking == 2 and KingInDanger(path[0]) == False:
+                    actionslist.append(('move', newpos[0], newpos[1], path[0]))
+                    del(path[0])
+
+                return json.dumps({'actions': actionslist}, separators=(',', ':'))
                 #coup_gagnant = (('move', 9, 8, 'W'), ('move', 9,7, 'W'), ('move', 9, 6, 'N'), ('move', 8, 6 ,'W'), ('move', 8,5, 'W'), ('move', 8,4, 'N'), ('move', 7,4, 'N'), ('move', 6,4, 'N'), ('move', 5, 4, 'N'), ('move', 4, 4, 'W'), ('move', 4, 3, 'W'), ('move', 4, 2, 'W'),('move', 4, 1,'W'),('move', 9,9, 'W'))
-                return json.dumps({'actions': []}, separators=(',', ':'))
 
 
 if __name__ == '__main__':

@@ -316,6 +316,7 @@ class KingAndAssassinsClient(game.GameClient):
         #   ('kill', x, y, dir): kills the assassin/knight in direction dir with knight/assassin at position (x, y)
         #   ('attack', x, y, dir): attacks the king in direction dir with assassin at position (x, y)
         #   ('reveal', x, y): reveals villager at position (x,y) as an assassin # reveal = révéler
+
         state = state._state['visible']
 
         # To find the position of a paw
@@ -349,12 +350,17 @@ class KingAndAssassinsClient(game.GameClient):
         def moveking():
             directmovewin = (('move', 9, 9, 'W'), ('move', 9,8, 'W'), ('move', 9, 7, 'W'), ('move', 9, 6 ,'W'), ('move', 9,5, 'W'), ('move', 9,4, 'W'), ('move', 9,3, 'W'), ('move', 9,2, 'N'), ('move', 8, 2, 'N'), ('move', 7, 2, 'N'), ('move', 6, 2, 'N'), ('move', 5, 2, 'N'),('move', 4, 2, 'N'), ('move', 3, 2 ,'W'), ('move', 3,1, 'W'))
 
-        # To recognize an assassin
+        def movevillager():
+            directmovevillager = (('move',5, 7, 'S'))
+
+        def moveknight():
+            directmoveknight = (('move', 9, 8, 'W'))
 
 
         # On définit les 3 assassins lors du 1er tour
         if state['card'] is None:
 
+            # To recognize an assassin
             def recognizeassassins() :
                 P = state['people']
                 A1 = P[2][1]

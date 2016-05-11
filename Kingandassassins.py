@@ -350,19 +350,23 @@ class KingAndAssassinsClient(game.GameClient):
             directmovewin = (('move', 9, 9, 'W'), ('move', 9,8, 'W'), ('move', 9, 7, 'W'), ('move', 9, 6 ,'W'), ('move', 9,5, 'W'), ('move', 9,4, 'W'), ('move', 9,3, 'W'), ('move', 9,2, 'N'), ('move', 8, 2, 'N'), ('move', 7, 2, 'N'), ('move', 6, 2, 'N'), ('move', 5, 2, 'N'),('move', 4, 2, 'N'), ('move', 3, 2 ,'W'), ('move', 3,1, 'W'))
 
         # To recognize an assassin
-        def recognizeassassins() :
-            P = PEOPLE
-            A1 = P[2][1]
-            A2 = P[5][5]
-            A3 = P[8][3]
-            posAssassins = [A1, A2, A3]
-            return posAssassins
 
-        posAssassins = recognizeassassins()
 
         # On définit les 3 assassins lors du 1er tour
         if state['card'] is None:
-            return json.dumps({'assassins': [posAssassins[0], posAssassins[1], posAssassins[2]]}, separators=(',', ':'))
+
+            def recognizeassassins() :
+                P = state['people']
+                A1 = P[2][1]
+                A2 = P[5][5]
+                A3 = P[8][3]
+                posAssassins = [A1, A2, A3]
+                return posAssassins
+
+            global posAssassins
+            posAssassins = recognizeassassins()
+
+            return json.dumps({'assassins': posAssassins}, separators=(',', ':'))
 
 
 

@@ -318,6 +318,24 @@ class KingAndAssassinsClient(game.GameClient):
         #   ('reveal', x, y): reveals villager at position (x,y) as an assassin # reveal = révéler
         state = state._state['visible']
 
+        # To find the position of a paw
+        def findpos(name):
+            l = 0
+            listknight = []
+            for line in PEOPLE:
+                l += 1
+                c = 0
+                for column in line :
+                    c += 1
+                    if column == name :
+                        if name == 'knight':
+                            listknight.append((l-1, c-1))
+                        else:
+                            return l-1, c-1
+            return listknight
+
+
+        # To recognize an assassin
         def recognizeassassins() :
             P = PEOPLE
             A1 = P[2][1]

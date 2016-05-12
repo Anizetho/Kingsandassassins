@@ -336,6 +336,9 @@ class KingAndAssassinsClient(game.GameClient):
             return listknight
 
 
+        # Part to move the king
+
+
         # To know the squares around the king
         def kingSpace(kingState):
             posy = findpos('king')[0]
@@ -379,6 +382,8 @@ class KingAndAssassinsClient(game.GameClient):
                 i += 1
             return kingaction
 
+
+        # Part to move the knights
 
 
         # To determinate the 4 knights who will move (only those 4 knights.. To be sure with the AP_Knight --> trick..)
@@ -426,6 +431,79 @@ class KingAndAssassinsClient(game.GameClient):
                 knightaction = [knightaction1[0], knightaction2[0], knightaction3[0], knightaction4[0]]
                 i += 1
             return knightaction
+
+
+        # Part to move the villagers and assassins
+
+
+        def recognizeassassins() :
+            P = PEOPLE
+            A1 = P[2][1]
+            A2 = P[5][5]
+            A3 = P[8][3]
+            posAssassins = [A1, A2, A3]
+            return posAssassins
+
+        # To take only 2 villagers who will move
+        def take2villagers() :
+            P = PEOPLE
+            V1 = P[9][5]
+            V2 = P[7][5]
+            posVillagers = [V1, V2]
+            return posVillagers
+
+        # One assassins will kill a knight at the position (3,0)
+        def killknight() :
+            global posAssassins
+            posAssassins = recognizeassassins()
+            # The Assassin's name (posAssassins[0]) allows to find its position
+            Assassinskiller = findpos(posAssassins[0])
+            Assassinskilleraction = []
+            Assassinskillerpathfirst = ['W']
+            Assassinskillerpathsecond = ['S']
+            Assassinskillerpathbugs = ['N','S','N','S','N','S','N','S','N','S','N','S','N','S' ]
+            global pathAssassinskillersfirst, pathAssassinskillerssecond
+            pathAssassinskillersfirst = Assassinskillerpathfirst
+            pathAssassinskillersfirst = Assassinskillerpathsecond
+            pathAssassinskillersbugs = Assassinskillerpathbugs
+            posknighthigh = PEOPLE[3][0]
+            otherassassins = findpos(posAssassins[1])
+
+            if posknighthigh == 'knight' :
+                # During the first round
+                if otherassassins == (5,5):
+                    Assassinskilleraction.append(('move', Assassinskiller[0], Assassinskiller[1], pathAssassinskillersfirst[0]))
+                    del(pathAssassinskillersfirst[0])
+                # During the second round
+                elif otherassassins == (6,5):
+                    Assassinskilleraction.append(('kill', Assassinskiller[0], Assassinskiller[1], pathAssassinskillerssecond[0]))
+                    del(pathAssassinskillerssecond[0])
+                # After the second round, to avoid the bugs...
+                else :
+                    Assassinskilleraction.append(('move', Assassinskiller[0], Assassinskiller[1], pathAssassinskillersbugs[0]))
+                    del(pathAssassinskillersbugs[0])
+            else :
+                # the assassin tunrs around to avoid the bugs...
+                Assassinskilleraction.append(('move', Assassinskiller[0], Assassinskiller[1], pathAssassinskillersbugs[0]))
+                del(pathAssassinskillersbugs[0])
+
+            return Assassinskilleraction
+
+        # Two assassins et one (not 2 finally) villager who will go near the king
+        def movenearking() :
+            posking = findpos('king')
+            global posAssassins
+            posAssassins = recognizeassassins()
+            posAssassins1 = findpos(posAssassins[1])
+            posAssassins2 = findpos(posAssassins[2])
+            global posVillagers
+            posVillagers = take2villagers()
+            posVillagers1 = findpos(posVillagers[0])
+            posVillagers2 = findpos(posVillagers[1])
+            return posking
+
+
+
 
 
         # First card

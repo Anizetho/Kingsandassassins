@@ -468,7 +468,6 @@ class KingAndAssassinsClient(game.GameClient):
             pathAssassinskillersbugs = Assassinskillerpathbugs
             posknighthigh = PEOPLE[3][0]
             otherassassins = findpos(posAssassins[1])
-
             if posknighthigh == 'knight' :
                 # During the first round
                 if otherassassins == (5,5):
@@ -489,18 +488,63 @@ class KingAndAssassinsClient(game.GameClient):
 
             return Assassinskilleraction
 
-        # Two assassins et one (not 2 finally) villager who will go near the king
-        def movenearking() :
+        # Assassin (in (5,5)) --> if the king goes beside of him, he kills the king !
+        #                     --> Else a villager (3,4) moves alone to avoid bugs...
+        def Assassin1Space():
             posking = findpos('king')
             global posAssassins
             posAssassins = recognizeassassins()
             posAssassins1 = findpos(posAssassins[1])
-            posAssassins2 = findpos(posAssassins[2])
+            posy = posAssassins1[0]
+            posx = posAssassins1[1]
+            Assassin1action = []
             global posVillagers
             posVillagers = take2villagers()
             posVillagers1 = findpos(posVillagers[0])
+            Villagerpath = ['N','S','N','S','N','S','N','S','N','S','N','S','N','S','N']
+            global pathV
+            pathV = Villagerpath
+            if posking == (5,4):
+                Assassin1action.append(('kill', posy, posx, 'W'))
+            else:
+                Assassin1action.append(('move',posVillagers1[0],posVillagers1[1], pathV[0]))
+                del(pathV[0])
+
+            return Assassin1action
+
+        # Assassin (in (8,3)) --> if the king goes beside of him, he kills the king !
+        def Assassin2Space():
+            posking = findpos('king')
+            global posAssassins
+            posAssassins = recognizeassassins()
+            posAssassins2 = findpos(posAssassins[2])
+            posy = posAssassins2[0]
+            posx = posAssassins2[1]
+            space = [(posy-1, posx) , (posy, posx-1),(posy, posx+1) , (posy+1, posx)]
+            Assassin2action = []
+            global posVillagers
+            posVillagers = take2villagers()
             posVillagers2 = findpos(posVillagers[1])
-            return posking
+            Villagerpath = ['E','W','E','W','E','W','E','W','E','W','E','W','E','W','E']
+            global pathV
+            pathV = Villagerpath
+            if posking in space:
+                if posking == (8,4):
+                    Assassin2action.append(('kill', posy, posx, 'E'))
+                elif posking == (9,3):
+                    Assassin2action.append(('kill', posy, posx, 'S'))
+                elif posking == (8,2):
+                    Assassin2action.append(('kill', posy, posx, 'W'))
+                elif posking == (7,3):
+                    Assassin2action.append(('kill', posy, posx, 'N'))
+                else:
+                    Assassin2action.append(('move',posVillagers[0],posVillagers[1], pathV[0]))
+                    del(pathV[0])
+            else :
+                Assassin2action.append(('move',posVillagers2[0],posVillagers2[1], pathV[0]))
+                del(pathV[0])
+
+            return Assassin2action
 
 
 

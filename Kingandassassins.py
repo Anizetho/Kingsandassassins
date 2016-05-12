@@ -336,220 +336,6 @@ class KingAndAssassinsClient(game.GameClient):
             return listknight
 
 
-        # Part to move the king
-
-
-        # To know the squares around the king
-        def kingSpace(kingState):
-            posy = findpos('king')[0]
-            posx = findpos('king')[1]
-            space = [(posy-1, posx-1) , (posy-1, posx) , (posy-1, posx+1) , (posy, posx-1),
-                     (posy, posx+1) , (posy+1, posx-1) , (posy+1, posx) , (posy+1, posx+1)]
-
-            if kingState == 'healthy' or kingState == 'injured':
-                spacefinal = []
-                for squares in space:
-                    if squares[0] < 10 and squares[1] < 10:
-                        spacefinal.append(squares)
-                return spacefinal
-
-
-        # To know if on the squares around the king, there are villagers
-        def KingInDanger():
-                espace = kingSpace('healthy')
-                for squares in espace :
-                    if PEOPLE[squares[0]][squares[1]] in POPULATION :
-                        return True
-                    else:
-                        return False
-
-        # To determinate the moves of the king
-        def kingmove():
-            posKing = findpos('king')
-            kingaction = []
-            i=0
-            # The king can only do one path..  :'(
-            kingpath = ['W', 'W', 'W', 'W', 'W', 'N', 'N', 'N', 'N', 'N', 'W', 'W', 'W']
-            global path
-            path = kingpath
-            while i < 1:
-                # If, on the squares around the king, there aren't villagers
-                if KingInDanger() is False :
-                    kingaction.append(('move', posKing[0], posKing[1], path[0]))
-                else:
-                    kingaction.append(())
-                del(path[0])
-                i += 1
-            return kingaction
-
-
-        # Part to move the knights
-
-
-        # To determinate the 4 knights who will move (only those 4 knights.. To be sure with the AP_Knight --> trick..)
-        def the4Knights():
-            posKnight = findpos('knight')
-            kn1 = posKnight[6]
-            kn2 = posKnight[3]
-            kn3 = posKnight[4]
-            kn4 = posKnight[5]
-            pos4knights = [kn1, kn2, kn3, kn4]
-            return pos4knights
-
-        # To determinate the knights'moves
-        def knightmove():
-            postheKnight = the4Knights()
-            postheKnight1 = postheKnight[0]
-            postheKnight2 = postheKnight[1]
-            postheKnight3 = postheKnight[2]
-            postheKnight4 = postheKnight[3]
-            knightaction1 = []
-            knightaction2 = []
-            knightaction3 = []
-            knightaction4 = []
-            i=0
-            # The knights have all an predefined path..
-            knight1path = ['W','W','W','W','W','W','W','N','N','N','N','W','N','N','W','W']
-            knight2path = ['W','W','W','W','W','N','N','N','N','N','N','W']     # Au 5ème coup : arrestation ou un coup à droite
-            knight3path = ['W','W','W','W','W','N','N','N','N','N','N','W']
-            knight4path = ['W','W','W','W','W','N','N','N','N','N','N','W']
-            global path1, path2, path3, path4
-            path1 = knight1path
-            path2 = knight2path
-            path3 = knight3path
-            path4 = knight4path
-            knightaction = []
-            while i < 1:
-                knightaction1.append(('move', postheKnight1[0], postheKnight1[1], path1[0]))
-                knightaction2.append(('move', postheKnight2[0], postheKnight2[1], path2[0]))
-                knightaction3.append(('move', postheKnight3[0], postheKnight3[1], path3[0]))
-                knightaction4.append(('move', postheKnight4[0], postheKnight4[1], path4[0]))
-                del(path1[0])
-                del(path2[0])
-                del(path3[0])
-                del(path4[0])
-                knightaction = [knightaction1[0], knightaction2[0], knightaction3[0], knightaction4[0]]
-                i += 1
-            return knightaction
-
-
-        # Part to move the villagers and assassins
-
-
-        def recognizeassassins() :
-            P = PEOPLE
-            A1 = P[2][1]
-            A2 = P[5][5]
-            A3 = P[8][3]
-            posAssassins = [A1, A2, A3]
-            return posAssassins
-
-        # To take only 2 villagers who will move
-        def take2villagers() :
-            P = PEOPLE
-            V1 = P[9][5]
-            V2 = P[7][5]
-            posVillagers = [V1, V2]
-            return posVillagers
-
-        # One assassins will kill a knight at the position (3,0)
-        def killknight() :
-            global posAssassins
-            posAssassins = recognizeassassins()
-            # The Assassin's name (posAssassins[0]) allows to find its position
-            Assassinskiller = findpos(posAssassins[0])
-            Assassinskilleraction = []
-            Assassinskillerpathfirst = ['W']
-            Assassinskillerpathsecond = ['S']
-            Assassinskillerpathbugs = ['N','S','N','S','N','S','N','S','N','S','N','S','N','S' ]
-            global pathAssassinskillersfirst, pathAssassinskillerssecond
-            pathAssassinskillersfirst = Assassinskillerpathfirst
-            pathAssassinskillersfirst = Assassinskillerpathsecond
-            pathAssassinskillersbugs = Assassinskillerpathbugs
-            posknighthigh = PEOPLE[3][0]
-            otherassassins = findpos(posAssassins[1])
-            if posknighthigh == 'knight' :
-                # During the first round
-                if otherassassins == (5,5):
-                    Assassinskilleraction.append(('move', Assassinskiller[0], Assassinskiller[1], pathAssassinskillersfirst[0]))
-                    del(pathAssassinskillersfirst[0])
-                # During the second round
-                elif otherassassins == (6,5):
-                    Assassinskilleraction.append(('kill', Assassinskiller[0], Assassinskiller[1], pathAssassinskillerssecond[0]))
-                    del(pathAssassinskillerssecond[0])
-                # After the second round, to avoid the bugs...
-                else :
-                    Assassinskilleraction.append(('move', Assassinskiller[0], Assassinskiller[1], pathAssassinskillersbugs[0]))
-                    del(pathAssassinskillersbugs[0])
-            else :
-                # the assassin tunrs around to avoid the bugs...
-                Assassinskilleraction.append(('move', Assassinskiller[0], Assassinskiller[1], pathAssassinskillersbugs[0]))
-                del(pathAssassinskillersbugs[0])
-
-            return Assassinskilleraction
-
-        # Assassin (in (5,5)) --> if the king goes beside of him, he kills the king !
-        #                     --> Else a villager (3,4) moves alone to avoid bugs...
-        def Assassin1Space():
-            posking = findpos('king')
-            global posAssassins
-            posAssassins = recognizeassassins()
-            posAssassins1 = findpos(posAssassins[1])
-            posy = posAssassins1[0]
-            posx = posAssassins1[1]
-            Assassin1action = []
-            global posVillagers
-            posVillagers = take2villagers()
-            posVillagers1 = findpos(posVillagers[0])
-            Villagerpath = ['N','S','N','S','N','S','N','S','N','S','N','S','N','S','N']
-            global pathV
-            pathV = Villagerpath
-            if posking == (5,4):
-                Assassin1action.append(('kill', posy, posx, 'W'))
-            else:
-                Assassin1action.append(('move',posVillagers1[0],posVillagers1[1], pathV[0]))
-                del(pathV[0])
-
-            return Assassin1action
-
-        # Assassin (in (8,3)) --> if the king goes beside of him, he kills the king !
-        def Assassin2Space():
-            posking = findpos('king')
-            global posAssassins
-            posAssassins = recognizeassassins()
-            posAssassins2 = findpos(posAssassins[2])
-            posy = posAssassins2[0]
-            posx = posAssassins2[1]
-            space = [(posy-1, posx) , (posy, posx-1),(posy, posx+1) , (posy+1, posx)]
-            Assassin2action = []
-            global posVillagers
-            posVillagers = take2villagers()
-            posVillagers2 = findpos(posVillagers[1])
-            Villagerpath = ['E','W','E','W','E','W','E','W','E','W','E','W','E','W','E']
-            global pathV
-            pathV = Villagerpath
-            if posking in space:
-                if posking == (8,4):
-                    Assassin2action.append(('kill', posy, posx, 'E'))
-                elif posking == (9,3):
-                    Assassin2action.append(('kill', posy, posx, 'S'))
-                elif posking == (8,2):
-                    Assassin2action.append(('kill', posy, posx, 'W'))
-                elif posking == (7,3):
-                    Assassin2action.append(('kill', posy, posx, 'N'))
-                else:
-                    Assassin2action.append(('move',posVillagers[0],posVillagers[1], pathV[0]))
-                    del(pathV[0])
-            else :
-                Assassin2action.append(('move',posVillagers2[0],posVillagers2[1], pathV[0]))
-                del(pathV[0])
-
-            return Assassin2action
-
-
-
-
-
         # First card
         if state['card'] is None:
 
@@ -570,26 +356,230 @@ class KingAndAssassinsClient(game.GameClient):
 
         # Others cards
         else:
-
-            #
+            # To play with the villagers and assassins
             if self._playernb == 0:
-                for i in range(10):
-                    for j in range(10):
-                        if state['people'][i][j] in {posAssassins[0], posAssassins[1], posAssassins[2]}:
-                            return json.dumps({'actions': [('reveal', i, j)]}, separators=(',', ':'))
+
+                # Part to move the villagers and assassins
+
+                def recognizeassassins() :
+                    P = state['people']
+                    A1 = P[2][1]
+                    A2 = P[5][5]
+                    A3 = P[8][3]
+                    posAssassins = [A1, A2, A3]
+                    return posAssassins
+
+                # To take only 2 villagers who will move
+                def take2villagers() :
+                    V = state['people']
+                    V1 = V[9][5]
+                    V2 = V[7][5]
+                    posVillagers = [V1, V2]
+                    return posVillagers
+
+                # One assassins will kill a knight at the position (3,0)
+                def killknight() :
+                    # The Assassin's name (posAssassins[0]) allows to find its position
+                    Assassinskiller = findpos(posAssassins[0])
+                    Assassinskilleraction = []
+                    Assassinskillerpathfirst = ['W']
+                    Assassinskillerpathsecond = ['S']
+                    Assassinskillerpathbugs = ['N','S','N','S','N','S','N','S','N','S','N','S','N','S' ]
+                    global pathAssassinskillersfirst, pathAssassinskillerssecond
+                    pathAssassinskillersfirst = Assassinskillerpathfirst
+                    pathAssassinskillersfirst = Assassinskillerpathsecond
+                    pathAssassinskillersbugs = Assassinskillerpathbugs
+                    posknighthigh = state['people'][3][0]
+                    otherassassins = findpos(posAssassins[1])
+                    if posknighthigh == 'knight' :
+                        # During the first round
+                        if otherassassins == (5,5):
+                            Assassinskilleraction.append(('move', Assassinskiller[0], Assassinskiller[1], pathAssassinskillersfirst[0]))
+                            del(pathAssassinskillersfirst[0])
+                        # During the second round
+                        elif otherassassins == (6,5):
+                            Assassinskilleraction.append(('kill', Assassinskiller[0], Assassinskiller[1], pathAssassinskillerssecond[0]))
+                            del(pathAssassinskillerssecond[0])
+                        # After the second round, to avoid the bugs...
+                        else :
+                            Assassinskilleraction.append(('move', Assassinskiller[0], Assassinskiller[1], pathAssassinskillersbugs[0]))
+                            del(pathAssassinskillersbugs[0])
+                    else :
+                        # the assassin tunrs around to avoid the bugs...
+                        Assassinskilleraction.append(('move', Assassinskiller[0], Assassinskiller[1], pathAssassinskillersbugs[0]))
+                        del(pathAssassinskillersbugs[0])
+
+                    return Assassinskilleraction
+
+                # Assassin (in (5,5)) --> if the king goes beside of him, he kills the king !
+                #                     --> Else a villager (3,4) moves alone to avoid bugs...
+                def Assassin1Space():
+                    posking = findpos('king')
+                    global posAssassins
+                    posAssassins = recognizeassassins()
+                    posAssassins1 = findpos(posAssassins[1])
+                    posy = posAssassins1[0]
+                    posx = posAssassins1[1]
+                    Assassin1action = []
+                    global posVillagers
+                    posVillagers = take2villagers()
+                    posVillagers1 = findpos(posVillagers[0])
+                    Villagerpath = ['N','S','N','S','N','S','N','S','N','S','N','S','N','S','N']
+                    global pathV
+                    pathV = Villagerpath
+                    if posking == (5,4):
+                        Assassin1action.append(('kill', posy, posx, 'W'))
+                    else:
+                        Assassin1action.append(('move',posVillagers1[0],posVillagers1[1], pathV[0]))
+                        del(pathV[0])
+
+                    return Assassin1action
+
+                # Assassin (in (8,3)) --> if the king goes beside of him, he kills the king !
+                #                     --> Else a villager moves alone to avoid bugs...
+                def Assassin2Space():
+                    posking = findpos('king')
+                    global posAssassins
+                    posAssassins = recognizeassassins()
+                    posAssassins2 = findpos(posAssassins[2])
+                    posy = posAssassins2[0]
+                    posx = posAssassins2[1]
+                    space = [(posy-1, posx) , (posy, posx-1),(posy, posx+1) , (posy+1, posx)]
+                    Assassin2action = []
+                    global posVillagers
+                    posVillagers = take2villagers()
+                    posVillagers2 = findpos(posVillagers[1])
+                    Villagerpath = ['E','W','E','W','E','W','E','W','E','W','E','W','E','W','E']
+                    global pathV
+                    pathV = Villagerpath
+                    if posking in space:
+                        if posking == (8,4):
+                            Assassin2action.append(('kill', posy, posx, 'E'))
+                        elif posking == (9,3):
+                            Assassin2action.append(('kill', posy, posx, 'S'))
+                        elif posking == (8,2):
+                            Assassin2action.append(('kill', posy, posx, 'W'))
+                        elif posking == (7,3):
+                            Assassin2action.append(('kill', posy, posx, 'N'))
+                        else:
+                            Assassin2action.append(('move',posVillagers2[0],posVillagers2[1], pathV[0]))
+                            del(pathV[0])
+                    else :
+                        Assassin2action.append(('move',posVillagers2[0],posVillagers2[1], pathV[0]))
+                        del(pathV[0])
+
+                    return Assassin2action
+
+                actionASSORVILL1 = killknight()[0]
+                actionASSORVILL2 = Assassin1Space()[0]
+                actionASSORVILL3 = Assassin2Space()[0]
+
+                return json.dumps({'actions': [actionASSORVILL1, actionASSORVILL2, actionASSORVILL3]}, separators=(',', ':'))
 
 
-                return json.dumps({'actions': []}, separators=(',', ':'))
 
-
-
-            # Déplacement du roi et des chevaliers
+            # To play with the king and the knights
             else:
+                # Part to move the knights
 
-                actionlist =[]
-                #coup_gagnant = (('move', 9, 8, 'W'), ('move', 9,7, 'W'), ('move', 9, 6, 'N'), ('move', 8, 6 ,'W'), ('move', 8,5, 'W'), ('move', 8,4, 'N'), ('move', 7,4, 'N'), ('move', 6,4, 'N'), ('move', 5, 4, 'N'), ('move', 4, 4, 'W'), ('move', 4, 3, 'W'), ('move', 4, 2, 'W'),('move', 4, 1,'W'),('move', 9,9, 'W'))
-                return json.dumps({'actions': []}, separators=(',', ':'))
+                # To determinate the 4 knights who will move (only those 4 knights.. To be sure with the AP_Knight --> trick..)
+                def the4Knights():
+                    posKnight = findpos('knight')
+                    kn1 = posKnight[6]
+                    kn2 = posKnight[3]
+                    kn3 = posKnight[4]
+                    kn4 = posKnight[5]
+                    pos4knights = [kn1, kn2, kn3, kn4]
+                    return pos4knights
 
+                # To determinate the knights' moves
+                def knightmove():
+                    postheKnight = the4Knights()
+                    postheKnight1 = postheKnight[0]
+                    postheKnight2 = postheKnight[1]
+                    postheKnight3 = postheKnight[2]
+                    postheKnight4 = postheKnight[3]
+                    knightaction1 = []
+                    knightaction2 = []
+                    knightaction3 = []
+                    knightaction4 = []
+                    i=0
+                    # The knights have all an predefined path...
+                    knight1path = ['W','W','W','W','W','W','W','N','N','N','N','W','N','N','W','W']
+                    knight2path = ['W','W','W','W','W','N','N','N','N','N','N','W']     # Au 5ème coup : arrestation ou un coup à droite
+                    knight3path = ['W','W','W','W','W','N','N','N','N','N','N','W']
+                    knight4path = ['W','W','W','W','W','N','N','N','N','N','N','W']
+                    global path1, path2, path3, path4
+                    path1 = knight1path
+                    path2 = knight2path
+                    path3 = knight3path
+                    path4 = knight4path
+                    knightaction = []
+                    while i < 1:
+                        knightaction1.append(('move', postheKnight1[0], postheKnight1[1], path1[0]))
+                        knightaction2.append(('move', postheKnight2[0], postheKnight2[1], path2[0]))
+                        knightaction3.append(('move', postheKnight3[0], postheKnight3[1], path3[0]))
+                        knightaction4.append(('move', postheKnight4[0], postheKnight4[1], path4[0]))
+                        del(path1[0])
+                        del(path2[0])
+                        del(path3[0])
+                        del(path4[0])
+                        knightaction = [knightaction1[0], knightaction2[0], knightaction3[0], knightaction4[0]]
+                        i += 1
+                    return knightaction
+
+                # Part to move the king
+
+                # To know the squares around the king
+                def kingSpace(kingState):
+                    posy = findpos('king')[0]
+                    posx = findpos('king')[1]
+                    space = [(posy-1, posx-1) , (posy-1, posx) , (posy-1, posx+1) , (posy, posx-1),
+                             (posy, posx+1) , (posy+1, posx-1) , (posy+1, posx) , (posy+1, posx+1)]
+
+                    if kingState == 'healthy' or kingState == 'injured':
+                        spacefinal = []
+                        for squares in space:
+                            if squares[0] < 10 and squares[1] < 10:
+                                spacefinal.append(squares)
+                        return spacefinal
+
+                # To know if, on the squares around the king, there are villagers
+                def KingInDanger():
+                        espace = kingSpace('healthy')
+                        for squares in espace :
+                            if PEOPLE[squares[0]][squares[1]] in POPULATION :
+                                return True
+                            else:
+                                return False
+
+                # To determinate the moves of the king
+                def kingmove():
+                    posKing = findpos('king')
+                    kingaction = []
+                    i=0
+                    # The king can only do one path..  :'(
+                    kingpath = ['W', 'W', 'W', 'W', 'W', 'N', 'N', 'N', 'N', 'N', 'W', 'W', 'W']
+                    global path
+                    path = kingpath
+                    while i < 1:
+                        # If, on the squares around the king, there aren't villagers
+                        if KingInDanger() is False :
+                            kingaction.append(('move', posKing[0], posKing[1], path[0]))
+                        else:
+                            kingaction.append(())
+                        del(path[0])
+                        i += 1
+                    return kingaction
+
+                actionKNIGHT1 = knightmove()[0]
+                actionKNIGHT2 = knightmove()[1]
+                actionKNIGHT3 = knightmove()[2]
+                actionKNIGHT4 = knightmove()[3]
+                actionKING = kingmove()[0]
+                return json.dumps({'actions': [actionKNIGHT1, actionKNIGHT2, actionKNIGHT3, actionKNIGHT4, actionKING]}, separators=(',', ':'))
+
+# Bref, ça bug à partir de "Turn #3".. :'(
 
 if __name__ == '__main__':
     # Create the top-level parser

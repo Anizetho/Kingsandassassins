@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # kingandassassins.py
-# Author: Sébastien Combéfis
-# Version: April 29, 2016
+# Author: Sébastien Combéfis & Anizet Thomas
+# Version: Mai 13, 2016
 
 import argparse
 import json
@@ -354,9 +354,9 @@ class KingAndAssassinsClient(game.GameClient):
             return json.dumps({'assassins': posAssassins}, separators=(',', ':'))
 
 
-        # Others cards
+        # Other cards
         else:
-            # To play with the villagers and assassins
+            # To play with the villagers and the assassins
             if self._playernb == 0:
 
                 # Part to move the villagers and assassins
@@ -369,7 +369,7 @@ class KingAndAssassinsClient(game.GameClient):
                     posAssassins = [A1, A2, A3]
                     return posAssassins
 
-                # To take only 2 villagers who will move
+                # To take only 2 villagers whom will move
                 def take2villagers() :
                     V = state['people']
                     V1 = V[9][5]
@@ -377,7 +377,7 @@ class KingAndAssassinsClient(game.GameClient):
                     posVillagers = [V1, V2]
                     return posVillagers
 
-                # One assassins will kill a knight at the position (3,0)
+                # One assassin will kill a knight at the position (3,0)
                 def killknight() :
                     # The Assassin's name (posAssassins[0]) allows to find its position
                     Assassinskiller = findpos(posAssassins[0])
@@ -405,7 +405,7 @@ class KingAndAssassinsClient(game.GameClient):
                             Assassinskilleraction.append(('move', Assassinskiller[0], Assassinskiller[1], pathAssassinskillersbugs[0]))
                             del(pathAssassinskillersbugs[0])
                     else :
-                        # the assassin tunrs around to avoid the bugs...
+                        # the assassin turns around to avoid the bugs...
                         Assassinskilleraction.append(('move', Assassinskiller[0], Assassinskiller[1], pathAssassinskillersbugs[0]))
                         del(pathAssassinskillersbugs[0])
 
@@ -482,7 +482,7 @@ class KingAndAssassinsClient(game.GameClient):
             else:
                 # Part to move the knights
 
-                # To determinate the 4 knights who will move (only those 4 knights.. To be sure with the AP_Knight --> trick..)
+                # To determinate the 4 knights whom will move (only those 4 knights.. To be sure with the AP_Knight --> trick...)
                 def the4Knights():
                     posKnight = findpos('knight')
                     kn1 = posKnight[6]
@@ -492,7 +492,7 @@ class KingAndAssassinsClient(game.GameClient):
                     pos4knights = [kn1, kn2, kn3, kn4]
                     return pos4knights
 
-                # To determinate the knights' moves
+                # To determinate the moves of the knights
                 def knightmove():
                     postheKnight = the4Knights()
                     postheKnight1 = postheKnight[0]
@@ -504,9 +504,9 @@ class KingAndAssassinsClient(game.GameClient):
                     knightaction3 = []
                     knightaction4 = []
                     i=0
-                    # The knights have all an predefined path...
+                    # The knights have all a predefined path...
                     knight1path = ['W','W','W','W','W','W','W','N','N','N','N','W','N','N','W','W']
-                    knight2path = ['W','W','W','W','W','N','N','N','N','N','N','W']     # Au 5ème coup : arrestation ou un coup à droite
+                    knight2path = ['W','W','W','W','W','N','N','N','N','N','N','W']     # On the fifth move : arrest or one move to the right
                     knight3path = ['W','W','W','W','W','N','N','N','N','N','N','W']
                     knight4path = ['W','W','W','W','W','N','N','N','N','N','N','W']
                     global path1, path2, path3, path4
@@ -563,7 +563,7 @@ class KingAndAssassinsClient(game.GameClient):
                     global path
                     path = kingpath
                     while i < 1:
-                        # If, on the squares around the king, there aren't villagers
+                        # If, on the squares around the king, there are no villagers
                         if KingInDanger() is False :
                             kingaction.append(('move', posKing[0], posKing[1], path[0]))
                         else:
@@ -579,7 +579,14 @@ class KingAndAssassinsClient(game.GameClient):
                 actionKING = kingmove()[0]
                 return json.dumps({'actions': [actionKNIGHT1, actionKNIGHT2, actionKNIGHT3, actionKNIGHT4, actionKING]}, separators=(',', ':'))
 
-# Bref, ça bug à partir de "Turn #3".. :'(
+# The program doesn't work anymore after the "Turn #3".
+# The problem is that the function del() doesn't delete the elements that I require and so the first moves (for king and knights) come back everytime.
+# I wanted to make something that works when I run this in the terminal : so my code is basic.
+# With this code, I did several mistakes/ :
+# 1) I don't consider the PA but I don't exceed the PA on a card :
+# For the king, I give only one move ; for the knights, I give 4 moves ; for the villagers and assassins, I give 3 moves.
+# 2) I don't do the difference between the ground and the roof
+# It was great to do this code ! Unfortunately, it should have been better if we could start this project earlier.
 
 if __name__ == '__main__':
     # Create the top-level parser
